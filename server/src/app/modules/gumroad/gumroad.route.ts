@@ -5,12 +5,6 @@ import { getBookByGenre, getBookByGenreAndPublisher, getFeaturedBooks, updateBoo
 const router = express.Router();
 
 //book by genre
-router.get("/genre/:genre", getBookByGenre);
-
-router.get("/genre/:genre/publisher/:publisher", getBookByGenreAndPublisher);
-
-router.get("/update-price", updateBookPriceToInteger);
-
-router.get("/featured-books", getFeaturedBooks);
+router.get("/");
 
 export default router;

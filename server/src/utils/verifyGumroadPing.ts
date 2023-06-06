@@ -18,6 +18,7 @@ const verifyGumroadPing = (req: Request, res: Response, next: NextFunction) => {
       licenseKey: license_key,
       name: product_name,
       isMarketingAllowed: false,
+      platform: "gumroad",
     },
     gumroad: {
       productId: product_id,

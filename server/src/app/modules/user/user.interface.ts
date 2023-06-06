@@ -4,6 +4,7 @@ interface IUser {
     lastName: string;
   };
   email: string;
+  roles: string[];
   password: string;
 }
 

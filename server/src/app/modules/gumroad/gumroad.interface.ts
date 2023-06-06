@@ -8,6 +8,7 @@ interface IGumroad {
   versions: string[];
   saleTimestamp: string;
   orderNumber: number;
+  tableName: string;
 }
 
 export default IGumroad;

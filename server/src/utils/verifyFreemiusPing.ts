@@ -10,7 +10,7 @@ const verifyFreemiusPing = async (req: Request, res: Response, next: NextFunctio
 
   const freemius = new Freemius("developer", process.env.DEVELOPER_ID, process.env.PUBLIC_KEY, process.env.SECRET_KEY);
 
-  const response = await freemius.getLicense(`/plugins/8795/licenses/1151993.json`);
+  const response = await freemius.getLicense(`/plugins/${plugin_id}/licenses/${license?.id}.json`);
 
   const plugins: any = {
     "8795": "3D Viewer",
@@ -33,6 +33,7 @@ const verifyFreemiusPing = async (req: Request, res: Response, next: NextFunctio
       licenseKey: response?.secret_key,
       name: plugins[plugin_id],
       isMarketingAllowed: user.is_marketing_allowed,
+      platform: "freemius",
     },
     freemius: {
       freemiusPluginId: plugin_id,
