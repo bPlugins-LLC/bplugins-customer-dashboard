@@ -12,6 +12,13 @@ const PluginSchema = new Schema<IPlugin>(
       type: String,
       required: true,
     },
+    pluginListId: {
+      type: String,
+    },
+    productId: {
+      type: String,
+      required: true,
+    },
     licenseKey: {
       type: String,
       required: true,

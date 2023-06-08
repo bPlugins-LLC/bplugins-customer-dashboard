@@ -1,4 +1,4 @@
-import express, { ErrorRequestHandler, NextFunction, Request, Response } from "express";
+import express, { ErrorRequestHandler, NextFunction, Request, RequestHandler, Response } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
@@ -13,6 +13,7 @@ import authRoutes from "./app/modules/auth/auth.route";
 import freemiusRoutes from "./app/modules/freemius/freemius.route";
 import gumroadRoutes from "./app/modules/gumroad/gumroad.route";
 import pluginListRoutes from "./app/modules/pluginList/pluginList.route";
+import Freemius from "./lib/Freemius";
 
 const app = express();
 
@@ -34,6 +35,16 @@ app.use("/api/v1/plugin-list", pluginListRoutes);
 
 app.post("/api/v1/webhook/gumroad", varifyGumroadPing, processPluginPurchase);
 app.post("/api/v1/webhook/freemius", varifyFreemiusPing, processPluginPurchase);
+
+app.get("/download", async (req, res) => {
+  const api = new Freemius("developer", process.env.DEVELOPER_ID, process.env.PUBLIC_KEY, process.env.SECRET_KEY);
+
+  // const response = api.makeRequest("/plugins/8795/tags/tag_id.zip?is_premium=true");
+  const response = await api.getTags(8795);
+  // const response = await api.getLicense(8795, 1151993);
+  // console.log(response);
+  res.json(response);
+});
 
 // temp
 app.use((req: Request, res: Response, next: NextFunction) => {

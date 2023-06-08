@@ -99,8 +99,9 @@ export const login = async (req: Request, res: Response) => {
     const user = await User.findOne({ email: req.body.email });
 
     if (!user)
-      return res.status(404).json({
+      return res.status(403).json({
         message: "User not found",
+        success: false,
       });
 
     const isPasswordCorrect = await bcrypt.compare(req.body.password, user.password);
@@ -131,25 +132,6 @@ export const login = async (req: Request, res: Response) => {
     });
   }
 };
-
-// export const verifyToken = async (req: Request, res: Response) => {
-//   const { access_token } = req.query;
-//   if (access_token) {
-//     try {
-//       const decode = jwt.verify(token, process.env.JWT_SECRET as string);
-//     } catch (error) {}
-//     // const tokenUser = authServices.verifyToken(access_token as string);
-//     // if (tokenUser) {
-//     //   const user = await User.findOne({ email: tokenUser.email });
-//     //   if (user) {
-//     //     const { password, ...details } = user._doc;
-//     //     return res.status(200).json({ success: true, user: details });
-//     //   }
-//     // }
-//   }
-
-//   res.status(403).json({ success: false, message: "Unauthorized Authentication" });
-// };
 
 export const tokenVerified = async (req: Request, res: Response) => {
   const { id } = req.headers.user;

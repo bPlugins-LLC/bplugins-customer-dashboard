@@ -7,6 +7,11 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
+import { Box, Button, Divider, Typography } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
+import axios from "../../axios";
+import { deactivateLicense } from "../../rtk/features/plugin/pluginSlice";
+import SimpleLoader from "../../components/Loader/SimpleLoader";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -28,31 +33,72 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-function createData(name, calories, fat, carbs, protein) {
-  return { name, calories, fat, carbs, protein };
-}
+const DangerButton = styled(Button)(({ theme }) => ({
+  color: "#fff",
+  backgroundColor: "#D32F2F",
+  "&:hover": {
+    backgroundColor: "#910404",
+  },
+}));
 
-const rows = [createData("Frozen yoghurt", 159, 6.0, 24, 4.0)];
+export default function WebsiteTable({ licenseKey, tableName }) {
+  const { details, subLoading } = useSelector((state) => state.plugin);
+  const [websiteInDanger, setWebsiteInDanger] = React.useState(null);
+  const dispatch = useDispatch();
 
-export default function WebsiteTable({ plugins }) {
+  const handleDeactivateLicense = (website) => {
+    setWebsiteInDanger(website);
+    dispatch(
+      deactivateLicense({
+        license_key: licenseKey,
+        product: tableName,
+        website,
+        action: "deactive",
+      })
+    );
+  };
+
+  const websites = details?.[licenseKey];
+
+  if (!Array.isArray(websites) || !websites.length) {
+    return (
+      <Box className="mt-10">
+        <Divider />
+        <Typography variant="h4" className="pt-5">
+          No website activated yet
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
     <TableContainer component={Paper}>
       <Table sx={{ minWidth: 700 }} aria-label="customized table">
         <TableHead>
           <TableRow>
+            <StyledTableCell>SL.</StyledTableCell>
             <StyledTableCell>Website</StyledTableCell>
             <StyledTableCell align="right">Action</StyledTableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((row) => (
-            <StyledTableRow key={row.name}>
-              <StyledTableCell component="th" scope="row">
-                {row.name}
-              </StyledTableCell>
-              <StyledTableCell align="right">{row.calories}</StyledTableCell>
-            </StyledTableRow>
-          ))}
+          {Array.isArray(websites) &&
+            websites?.map((website, index) => (
+              <StyledTableRow key={website}>
+                <StyledTableCell component="th" scope="row">
+                  {index + 1}
+                </StyledTableCell>
+                <StyledTableCell component="th" scope="row">
+                  {website}
+                </StyledTableCell>
+                <StyledTableCell align="right">
+                  {subLoading && details[`${licenseKey}`]?.indexOf(websiteInDanger) === index && <SimpleLoader width={20} />}
+                  <DangerButton disabled={subLoading} variant="contained" onClick={() => handleDeactivateLicense(website)}>
+                    Deactivate License
+                  </DangerButton>
+                </StyledTableCell>
+              </StyledTableRow>
+            ))}
         </TableBody>
       </Table>
     </TableContainer>

@@ -15,6 +15,7 @@ const verifyGumroadPing = (req: Request, res: Response, next: NextFunction) => {
       email,
     },
     plugin: {
+      productId: product_id,
       licenseKey: license_key,
       name: product_name,
       isMarketingAllowed: false,
@@ -25,7 +26,7 @@ const verifyGumroadPing = (req: Request, res: Response, next: NextFunction) => {
       permalink,
       saleId: sale_id,
       refunded,
-      variants,
+      variants: variants[0],
       saleTimestamp: sale_timestamp,
       orderNumber: order_number,
     },

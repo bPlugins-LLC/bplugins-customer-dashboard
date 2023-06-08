@@ -1,8 +1,8 @@
-import defaultAxios, { Axios, AxiosError } from "axios";
+import defaultAxios from "axios";
 
 const axios = defaultAxios.create({
-  baseURL: "http://localhost:5000", // Replace with your backend API base URL
-  timeout: 5000, // Request timeout in milliseconds
+  baseURL: "http://localhost:5000",
+  timeout: 5000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -18,22 +18,7 @@ axios.interceptors.request.use(
     return config;
   },
   (error) => {
-    // console.log(error);
-    // return Promise.reject(error);
-  }
-);
-
-defaultAxios.interceptors.response.use((error) => {
-  if (Axios.isCancel(error)) {
-    return console.log(error);
-  }
-});
-
-defaultAxios.interceptors.response.use(
-  function (response) {
-    throw new axios.Cancel("Operation canceled by the user.");
-  },
-  function (error) {
+    console.log(error);
     return Promise.reject(error);
   }
 );

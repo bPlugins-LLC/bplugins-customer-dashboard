@@ -1,68 +1,34 @@
-import { useEffect, useState } from "react";
-import Avatar from "@mui/material/Avatar";
-import Button from "@mui/material/Button";
-import CssBaseline from "@mui/material/CssBaseline";
-import TextField from "@mui/material/TextField";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Checkbox from "@mui/material/Checkbox";
-import Link from "@mui/material/Link";
-import Paper from "@mui/material/Paper";
+import * as React from "react";
+import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+
+import { Avatar, Button, Card, CardActions, CircularProgress, TextField, Typography } from "@mui/material";
+import LockIcon from "@mui/icons-material/Lock";
+
 import Box from "@mui/material/Box";
-import Grid from "@mui/material/Grid";
-import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import Typography from "@mui/material/Typography";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-
-import { setUser } from "../../rtk/features/user/userSlice";
 import axios from "../../axios";
+import { Login, setUser, setUserError } from "../../rtk/features/user/userSlice";
 
-function Copyright(props) {
-  return (
-    <Typography variant="body2" color="text.secondary" align="center" {...props}>
-      {"Copyright © "}
-      <Link color="inherit" href="https://mui.com/">
-        Your Website
-      </Link>{" "}
-      {new Date().getFullYear()}
-      {"."}
-    </Typography>
-  );
-}
-
-// TODO remove, this demo shouldn't need to reset the theme.
-
-const defaultTheme = createTheme();
-
-export default function Login() {
-  const user = useSelector((state) => state.user);
+const TestLogin = () => {
+  const { user, loading, error } = useSelector((state) => state.user);
   const [credential, setCredential] = useState({});
-
   const dispatch = useDispatch();
-
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (user.user) {
-      console.log(user.user);
+  React.useEffect(() => {
+    if (user) {
       navigate("/");
     }
-  }, [user.user]);
+  }, [user, navigate]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log(credential);
-
-    axios
-      .post("/api/v1/auth/login", credential)
-      .then(({ data }) => {
-        console.log(data);
-        dispatch(setUser(data.user));
-        localStorage.setItem("access_token", data.token.access_token);
-        localStorage.setItem("refresh_token", data.token.refresh_token);
-      })
-      .catch((error) => console.log(error.message));
+    if (!credential.email || !credential.password) {
+      dispatch(setUserError("Field empty!"));
+    } else {
+      dispatch(Login(credential));
+    }
   };
 
   const handleFormInput = (e) => {
@@ -70,62 +36,62 @@ export default function Login() {
   };
 
   return (
-    <ThemeProvider theme={defaultTheme}>
-      <Grid container component="main" sx={{ height: "100vh" }}>
-        <CssBaseline />
-        <Grid
-          item
-          xs={false}
-          sm={4}
-          md={7}
-          sx={{
-            backgroundImage: "url(https://source.unsplash.com/random?wallpapers)",
-            backgroundRepeat: "no-repeat",
-            backgroundColor: (t) => (t.palette.mode === "light" ? t.palette.grey[50] : t.palette.grey[900]),
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
-        />
-        <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
+    <form onSubmit={handleSubmit} noValidate>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          minHeight: "100vh",
+          alignItems: "center",
+          justifyContent: "flex-start",
+          background: "url(https://source.unsplash.com/featured/1600x900)",
+          backgroundRepeat: "no-repeat",
+          backgroundSize: "cover",
+        }}
+      >
+        <Card sx={{ minWidth: 300, marginTop: "6em" }}>
           <Box
             sx={{
-              my: 8,
-              mx: 4,
+              margin: "1em",
               display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
+              justifyContent: "center",
             }}
           >
-            <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
-              <LockOutlinedIcon />
+            <Avatar sx={{ bgcolor: "secondary.main" }}>
+              <LockIcon />
             </Avatar>
-            <Typography component="h1" variant="h5">
-              Sign in
-            </Typography>
-            <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 1 }}>
+          </Box>
+          <Box
+            sx={{
+              marginTop: "1em",
+              display: "flex",
+              justifyContent: "center",
+              color: (theme) => theme.palette.grey[500],
+            }}
+          >
+            Login
+          </Box>
+          <Box sx={{ padding: "0 1em 1em 1em" }}>
+            <Box sx={{ marginTop: "1em" }}>
               <TextField onChange={handleFormInput} margin="normal" required fullWidth id="email" label="Email Address" name="email" autoComplete="email" autoFocus />
-              <TextField onChange={handleFormInput} margin="normal" required fullWidth name="password" label="Password" type="password" id="password" autoComplete="current-password" />
-              <FormControlLabel control={<Checkbox value="remember" color="primary" />} label="Remember me" />
-              <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
-                Sign In
-              </Button>
-              <Grid container>
-                <Grid item xs>
-                  <Link href="#" variant="body2">
-                    Forgot password?
-                  </Link>
-                </Grid>
-                <Grid item>
-                  <Link href="#" variant="body2">
-                    {"Don't have an account? Sign Up"}
-                  </Link>
-                </Grid>
-              </Grid>
-              <Copyright sx={{ mt: 5 }} />
+            </Box>
+            <Box sx={{ marginTop: "1em" }}>
+              <TextField className={`text-red-600`} onChange={handleFormInput} margin="normal" required fullWidth name="password" label="Password" type="password" id="password" autoComplete="current-password" />
             </Box>
           </Box>
-        </Grid>
-      </Grid>
-    </ThemeProvider>
+          <CardActions sx={{ padding: "0 1em 1em 1em" }}>
+            <Button variant="contained" type="submit" color="primary" disabled={loading} fullWidth>
+              {loading && <CircularProgress size={25} thickness={2} />}
+              Login
+            </Button>
+          </CardActions>
+          <Box className="text-center p-3">
+            <Typography className="text-red-600">{error}</Typography>
+          </Box>
+        </Card>
+      </Box>
+    </form>
   );
-}
+};
+
+export default TestLogin;

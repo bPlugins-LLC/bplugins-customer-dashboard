@@ -1,6 +1,8 @@
 interface IPlugin {
   userId: string;
+  pluginListId: string;
   name: string;
+  productId: string;
   licenseKey: string;
   quantity: number;
   isMarketingAllowed: boolean;
