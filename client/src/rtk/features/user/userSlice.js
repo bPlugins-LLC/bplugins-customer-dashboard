@@ -9,7 +9,18 @@ const initialState = {
   loading: false,
   error: null,
   activeRole: "customer",
+  freemiusUser: null,
 };
+
+export const fetchFreemiusUser = createAsyncThunk("user/fetchFreemiusUser", async ({ pluginId, userId }) => {
+  try {
+    const response = await axios.get(`/api/v1/freemius/plugins/${pluginId}/users/${userId}?fields=email,public_key,secret_key,first,last`);
+    console.log({ pluginId, userId }, response.data);
+    return response.data.data;
+  } catch (error) {
+    throw new Error(error?.response?.data?.message);
+  }
+});
 
 export const verifyUserToken = createAsyncThunk("user/verifyUserToken", async () => {
   const access_token = localStorage.getItem("access_token");
@@ -38,6 +49,9 @@ const userSlice = createSlice({
     setUser: (state, action) => {
       state.user = action.payload;
       state.loading = false;
+    },
+    setFreemiusUser: (state, action) => {
+      state.freemiusUser = action.payload;
     },
     setUserRole: (state, action) => {
       state.activeRole = action.payload;
@@ -82,6 +96,20 @@ const userSlice = createSlice({
       state.loading = false;
       state.error = "Invalid Email/Password!";
     });
+
+    // fetch freemius user
+    // builder.addCase(Login.pending, (state, action) => {
+    //   // state.loading = true;
+    //   state.error = null;
+    // });
+    builder.addCase(fetchFreemiusUser.fulfilled, (state, action) => {
+      state.loading = false;
+      state.freemiusUser = action.payload;
+    });
+    // builder.addCase(Login.rejected, (state, action) => {
+    //   state.loading = false;
+    //   state.error = "Invalid Email/Password!";
+    // });
   },
 });
 
