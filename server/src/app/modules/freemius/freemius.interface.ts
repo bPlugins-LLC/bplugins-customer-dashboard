@@ -6,6 +6,7 @@ interface IFreemius {
   licenseId: string;
   publicKey: string;
   isLive: boolean;
+  expiration: string;
   isCancelled: boolean;
 }
 

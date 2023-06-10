@@ -8,6 +8,7 @@ import axios from "axios";
 import User from "../user/user.model";
 import mongoose from "mongoose";
 import freemiusServices from "./freemius.service";
+import Plugin from "../plugin/plugin.model";
 
 export const getCollectionById = async (req: Request, res: Response) => {
   const { id } = req.params;
@@ -177,4 +178,80 @@ export const getPlugins: RequestHandler = async (req, res, next) => {
       error: error,
     });
   }
+};
+
+export const syncPlugins: RequestHandler = async (req, res, next) => {
+  const { userId } = req.params;
+
+  const user = await User.findOne({ _id: userId });
+
+  if (!user) {
+    return next("User Not Found");
+  }
+
+  try {
+    const api = new FreemiusApi("user", user?.freemius?.id, user?.freemius?.public_key as string, user?.freemius?.secret_key as string);
+    const response = await api.makeRequest(`/plugins.json`);
+    let temp;
+
+    if (response?.plugins?.length) {
+      response?.plugins.map((plugin: any) => {
+        syncPlugin(api, user, plugin);
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: response.plugins,
+    });
+  } catch (error) {
+    res.json({
+      success: false,
+      error: error,
+    });
+  }
+};
+
+export const syncPlugin = async (api: any, user: any, plugin: any) => {
+  const response = await api.makeRequest(`/plugins/${plugin.id}/licenses.json`);
+  console.log(response.licenses);
+
+  response?.licenses?.map(async (license: any) => {
+    let existPlugin = await Plugin.findOne({ licenseKey: license.secret_key });
+    const pluginData = {
+      productId: plugin.id,
+      licenseKey: license.secret_key,
+      name: plugin.title,
+      platform: "freemius",
+      isMarketingAllowed: false,
+      userId: user._id,
+    };
+    if (!existPlugin) {
+      const newPlugin = new Plugin(pluginData);
+      await newPlugin.save();
+      existPlugin = newPlugin;
+    } else {
+      await Plugin.findOneAndUpdate({ licenseKey: license.secret_key }, pluginData);
+    }
+
+    const existFreemius = await Freemius.findOne({ pluginId: existPlugin._id });
+
+    const freemiusData = {
+      freemiusPluginId: plugin.id,
+      userId: user.freemius?.id,
+      licenseId: license?.id,
+      publicKey: "",
+      isLive: true,
+      isCancelled: license.is_cancelled,
+      expiration: license.expiration,
+    };
+
+    if (!existFreemius) {
+      freemiusData.pluginId = existPlugin._id;
+      const platform = new Freemius(freemiusData);
+      await platform.save();
+    } else {
+      await Freemius.findOneAndUpdate({ pluginId: existPlugin._id }, freemiusData);
+    }
+  });
 };

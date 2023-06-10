@@ -39,6 +39,9 @@ const pluginListSlice = createSlice({
     setCurrentId: (state, action) => {
       state.currentId = action.payload;
     },
+    logout: (state) => {
+      state = initialState;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(fetchPluginList.pending, (state, action) => {
@@ -92,4 +95,4 @@ const pluginListSlice = createSlice({
 
 export default pluginListSlice.reducer;
 
-export const { setPluginList, setCurrentId } = pluginListSlice.actions;
+export const { setPluginList, setCurrentId, logout } = pluginListSlice.actions;

@@ -3,16 +3,16 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
 const PrivateRoute = ({ requiredRole = "customer", children }) => {
-  const { activeRole, user } = useSelector((state) => state.user);
+  const { activeRole, user, loading } = useSelector((state) => state.user);
   const navigate = useNavigate();
   useEffect(() => {
-    if (!user) {
+    if (!user && !loading) {
       navigate("/login");
     }
-    if (requiredRole !== activeRole) {
+    if (!loading && requiredRole !== activeRole) {
       navigate("/");
     }
-  }, [user, navigate, requiredRole, activeRole]);
+  }, [user, navigate, requiredRole, activeRole, loading]);
 
   return children;
 };

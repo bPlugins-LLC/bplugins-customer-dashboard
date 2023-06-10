@@ -28,7 +28,6 @@ const FreemiusSchema = new Schema<IFreemius>(
     },
     publicKey: {
       type: String,
-      required: true,
     },
     isLive: {
       type: Boolean,
@@ -36,6 +35,10 @@ const FreemiusSchema = new Schema<IFreemius>(
     },
     isCancelled: {
       type: Boolean,
+      required: true,
+    },
+    expiration: {
+      type: String,
       required: true,
     },
   },

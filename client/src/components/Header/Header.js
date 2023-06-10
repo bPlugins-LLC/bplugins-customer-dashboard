@@ -14,7 +14,7 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import MoreIcon from "@mui/icons-material/MoreVert";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { setUserRole, userLogout } from "../../rtk/features/user/userSlice";
+import { logout, setUserRole, userLogout } from "../../rtk/features/user/userSlice";
 
 export default function PrimarySearchAppBar() {
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -45,6 +45,7 @@ export default function PrimarySearchAppBar() {
   const handleLogout = () => {
     dispatch(userLogout());
     handleMenuClose();
+    dispatch(logout());
   };
 
   const menuId = "primary-search-account-menu";

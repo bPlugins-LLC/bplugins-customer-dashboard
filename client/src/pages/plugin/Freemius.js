@@ -148,14 +148,23 @@ const Freemius = () => {
     );
   }
 
+  console.log(new Date(plugin.freemius?.expiration).getTime());
+
   if (!licenseKey || !product) {
     <h3 className="text-3xl">Something went wrong!</h3>;
   }
 
+  const expired = plugin.freemius?.expiration && new Date(plugin.freemius?.expiration).getTime() < Date.now();
+
   return (
     <div>
       <Box className="flex items-center justify-center mb-5 gap-5">
-        {Array.isArray(details[`versions${plugin.productId}`]) && details[`versions${plugin.productId}`]?.length ? (
+        {expired && (
+          <Box fullWidth>
+            <h3>License Key expired!</h3>
+          </Box>
+        )}
+        {!expired && Array.isArray(details[`versions${plugin.productId}`]) && details[`versions${plugin.productId}`]?.length ? (
           <>
             {fetchingFile && <SimpleLoader width="20" />}
             <Button disabled={fetchingFile} aria-haspopup="true" variant="contained" onClick={handleProfileMenuOpen}>

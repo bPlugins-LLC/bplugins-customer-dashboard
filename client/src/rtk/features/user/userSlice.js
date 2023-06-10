@@ -1,12 +1,14 @@
 import axios from "../../../axios";
+import { logout as pluginLogout } from "./../plugin/pluginSlice";
+import { logout as pluginListLogout } from "./../pluginLIst/pluginListSlice";
 
-const { createSlice, createAsyncThunk } = require("@reduxjs/toolkit");
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 // initial state
 const initialState = {
   user: null,
   loggedIn: false,
-  loading: false,
+  loading: true,
   error: null,
   activeRole: "customer",
   freemiusUser: null,
@@ -23,12 +25,16 @@ export const fetchFreemiusUser = createAsyncThunk("user/fetchFreemiusUser", asyn
 });
 
 export const verifyUserToken = createAsyncThunk("user/verifyUserToken", async () => {
-  const access_token = localStorage.getItem("access_token");
-  if (access_token) {
-    const response = await axios.get(`/api/v1/auth/verify-token?access_token=${access_token}`);
-    return response.data.user;
+  try {
+    const access_token = localStorage.getItem("access_token");
+    if (access_token) {
+      const response = await axios.get(`/api/v1/auth/verify-token?access_token=${access_token}`);
+      return response.data.user;
+    }
+    throw new Error("First Login")();
+  } catch (error) {
+    throw new Error("Something went wrong")();
   }
-  return null;
 });
 
 export const Login = createAsyncThunk("/user/login", async (credential) => {
@@ -63,6 +69,11 @@ const userSlice = createSlice({
     },
     setUserError: (state, action) => {
       state.error = action.payload;
+    },
+    logout: (state) => {
+      state = initialState;
+      pluginLogout();
+      pluginListLogout();
     },
   },
   extraReducers: (builder) => {
@@ -115,4 +126,4 @@ const userSlice = createSlice({
 
 export default userSlice.reducer;
 
-export const { setUser, setUserRole, userLogout, setUserError } = userSlice.actions;
+export const { setUser, setUserRole, userLogout, setUserError, logout } = userSlice.actions;

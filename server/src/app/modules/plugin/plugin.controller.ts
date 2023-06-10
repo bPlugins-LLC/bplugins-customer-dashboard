@@ -38,7 +38,7 @@ export const getPluginsByUserId = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
-    const plugins = await Plugin.find({ userId: req.params?.id });
+    const plugins = await Plugin.find({ userId: id });
 
     const pluginIds = plugins.map((plugin) => plugin._id);
 

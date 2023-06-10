@@ -32,7 +32,7 @@ const verifyFreemiusPing = async (req: Request, res: Response, next: NextFunctio
     plugin: {
       productId: plugin_id,
       licenseKey: response?.secret_key,
-      name: plugins[plugin_id],
+      name: plugins[plugin_id] || "Un Named",
       isMarketingAllowed: user.is_marketing_allowed,
       platform: "freemius",
     },
@@ -40,9 +40,10 @@ const verifyFreemiusPing = async (req: Request, res: Response, next: NextFunctio
       freemiusPluginId: plugin_id,
       userId: user_id,
       licenseId: license?.id,
-      publicKey: user?.public_key,
-      isLive: is_live,
+      publicKey: "",
+      isLive: true,
       isCancelled: license?.is_cancelled,
+      expiration: license.expiration,
     },
   };
 

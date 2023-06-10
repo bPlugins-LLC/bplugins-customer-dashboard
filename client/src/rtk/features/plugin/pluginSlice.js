@@ -1,8 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "../../../axios";
 
-import originalAxios from "axios";
-
 const initialState = {
   plugins: [],
   loading: true,
@@ -53,8 +51,10 @@ const pluginSlice = createSlice({
       state.loading = false;
     },
     setDetails: (state, action) => {
-      console.log("set details", action.payload);
       state.details = { ...state.details, ...action.payload };
+    },
+    logout: (state) => {
+      state = initialState;
     },
   },
   extraReducers: (builder) => {
@@ -118,4 +118,4 @@ const pluginSlice = createSlice({
 
 export default pluginSlice.reducer;
 
-export const { setPlugins, setDetails } = pluginSlice.actions;
+export const { setPlugins, setDetails, logout } = pluginSlice.actions;
