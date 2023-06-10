@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Box, Divider, List, ListItem, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
+import { Box, Button, Divider, List, ListItem, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
 import AppsIcon from "@mui/icons-material/Apps";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -18,8 +18,15 @@ const CustomerSidebar = () => {
     }
   }, [user, loading, dispatch]);
 
+  const handleSync = async () => {};
+
   return (
     <Box className="bg-slate-300" sx={{ width: "240px", height: "calc(100vh - 64px)" }}>
+      <Box className="p-2 flex justify-center">
+        <Button onClick={handleSync} variant="contained">
+          Sync Data
+        </Button>
+      </Box>
       <List>
         {plugins?.freemius?.map((plugin) => {
           return <MenuItem key={plugin._id} to={`/plugin/freemius/${plugin._id}`} text={plugin.name} icon={<AppsIcon />} />;

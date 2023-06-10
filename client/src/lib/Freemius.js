@@ -1,5 +1,4 @@
 import axios from "axios";
-import CryptoJS from "crypto-js";
 
 class Freemius {
   constructor(scope, id, publicKey, secretKey) {
@@ -57,8 +56,8 @@ class Freemius {
     const eol = "\n";
     let contentMd5 = "";
     const now = Math.floor(Date.now() / 1000) + 0;
-    const date = new Date(now * 1000).toUTCString().replace("GMT", "+0000");
-    // const date = "Fri, 09 Jun 2023 14:16:03 +0000";
+    // const date = new Date(now * 1000).toUTCString().replace("GMT", "+0000");
+    const date = "Fri, 09 Jun 2023 18:41:38 +0000";
     const stringToSign = [method, contentMd5, contentType, date, resourceUrl].join(eol);
     let signature = await this.generateSignature(this.secretKey, stringToSign);
     const authType = this.secretKey !== this.publicKey ? "FS" : "FSP";
@@ -67,6 +66,7 @@ class Freemius {
       Authorization: `${authType} ${id}:${this.publicKey}:${signature}`,
     };
 
+    this.lastUsedHeader = auth;
     return auth;
   }
 
@@ -125,16 +125,13 @@ class Freemius {
     }
   }
 
-  async makeRequest(path, headers = {}) {
+  async makeRequest(path, config = {}) {
     const canonizePath = this.canonizePath(path);
     this.lastUsedEndpoint = this.endpoint + canonizePath;
-    this.lastUsedHeader = this.generateAuthorizationHeader(canonizePath.split("?")?.[0]);
     try {
       const response = await axios.get(this.endpoint + canonizePath, {
-        headers: {
-          ...this.lastUsedHeader,
-          ...headers,
-        },
+        headers: this.generateAuthorizationHeader(canonizePath.split("?")?.[0]),
+        // ...config,
       });
       return response.data;
     } catch (error) {

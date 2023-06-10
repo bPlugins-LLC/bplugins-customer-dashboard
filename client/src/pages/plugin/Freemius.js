@@ -1,31 +1,28 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Box, Button, Input, Menu, MenuItem, Typography } from "@mui/material";
-import { styled } from "@mui/material/styles";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import copyToClipBoard from "../../utils/copyToClipBoard";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
-import axios from "../../axios";
-import WebsiteTable from "./WebsiteTable";
-import Loader from "../../components/Loader/Loader";
-import { setDetails } from "../../rtk/features/plugin/pluginSlice";
-import checkFileExists from "../../utils/checkFileExists";
-import SimpleLoader from "../../components/Loader/SimpleLoader";
 
-import FreemiusApi from "./../../lib/Freemius";
+import copyToClipBoard from "../../utils/copyToClipBoard";
+import axios from "../../axios";
+import Loader from "../../components/Loader/Loader";
+import { fetchFreemiusPluginInstalls, fetchFreemiusPluginVersions, setDetails } from "../../rtk/features/plugin/pluginSlice";
+import SimpleLoader from "../../components/Loader/SimpleLoader";
 import { fetchFreemiusUser } from "../../rtk/features/user/userSlice";
+import FreemiusWEbsiteTable from "./FreemiusWebsitesTable";
 
 const Freemius = () => {
-  const { plugins, details } = useSelector((state) => state.plugin);
+  const { plugins, details, subLoading } = useSelector((state) => state.plugin);
   const { freemiusUser } = useSelector((state) => state.user);
   const { list } = useSelector((state) => state.pluginList);
+  const { user } = useSelector((state) => state.user);
   const [loading, setLoading] = useState(false);
   const [plugin, setPlugin] = useState({});
   const [copied, setCopied] = useState(false);
   const [fetchingFile, setFetchingFile] = useState(false);
-  // const [websites, setWebsites] = useState([]);
 
   const dispatch = useDispatch();
 
@@ -38,15 +35,13 @@ const Freemius = () => {
   const licenseField = useRef();
 
   useEffect(() => {
-    if (!Object.keys(details).includes(`freemius${plugin?.productId}`) && plugin?.productId) {
-      axios
-        .get(`http://localhost:5000/api/v1/freemius/tags/${plugin?.productId}`)
-        .then(({ data }) => {
-          dispatch(setDetails({ [`freemius${plugin?.productId}`]: data.data }));
-        })
-        .catch((error) => console.log(error.message));
+    if (!Object.keys(details).includes(`versions${plugin?.productId}`) && plugin?.productId) {
+      dispatch(fetchFreemiusPluginVersions(plugin?.productId));
     }
-  }, [dispatch, details, plugin]);
+    if (!Object.keys(details).includes(`installs${plugin?.productId}`) && plugin?.productId) {
+      dispatch(fetchFreemiusPluginInstalls({ productId: plugin?.productId, userId: user?._id }));
+    }
+  }, [dispatch, plugin, user?._id, details]);
 
   useEffect(() => {
     setFieldType("password");
@@ -135,16 +130,17 @@ const Freemius = () => {
   }, [product, licenseKey, dispatch, details]);
 
   useEffect(() => {
+    console.log(plugin?.freemius?.userId, freemiusUser);
     if (!freemiusUser && plugin?.freemius?.userId) {
-      dispatch(fetchFreemiusUser({ pluginId: plugin.productId, userId: plugin?.freemius?.userId }));
+      dispatch(fetchFreemiusUser({ pluginId: plugin.productId, freemiusUserId: plugin?.freemius?.userId, userId: user?._id }));
     }
-  }, [plugins, freemiusUser, plugin, dispatch]);
+  }, [freemiusUser, plugin, dispatch, user?._id]);
 
   useEffect(() => {
     console.log(freemiusUser);
   }, [freemiusUser]);
 
-  if (loading) {
+  if (loading || subLoading) {
     return (
       <Box>
         <Loader className={`mt-5`} />
@@ -156,23 +152,10 @@ const Freemius = () => {
     <h3 className="text-3xl">Something went wrong!</h3>;
   }
 
-  const handleTestClick = async () => {
-    const api = new FreemiusApi("user", 3934558, "pk_99083998e06b4ce27aa930b195687", "sk_#EhND!!Cvq;Z~&060LM6o+[eP-Yjn");
-
-    const response = await api.makeRequest(`/plugins/6433/installs.json?user_id=3934558&filter=active_premium&search&reason_id&fields=id,url,version,title,is_active,user_id&count=30`);
-
-    // console.log(await api.generateAuthorizationHeader(`/v1/users/3934558/plugins/8795/installs.json?user_id=3934558&filter=active_premium&search&reason_id&fields=id,url,version,title,is_active,user_id&count=30`));
-
-    // console.log(response, await api.generateAuthorizationHeader(api.canonizePath(`/plugins/6433/installs.json?user_id=3934558&filter=active_premium&search&reason_id&fields=id,url,version,title,is_active,user_id&count=30`)));
-
-    console.log(response);
-  };
-
   return (
     <div>
-      <Box className="flex items-center justify-center gap-5">
-        <Button onClick={handleTestClick}>Test</Button>
-        {Array.isArray(details[`freemius${plugin.productId}`]) && details[`freemius${plugin.productId}`]?.length ? (
+      <Box className="flex items-center justify-center mb-5 gap-5">
+        {Array.isArray(details[`versions${plugin.productId}`]) && details[`versions${plugin.productId}`]?.length ? (
           <>
             {fetchingFile && <SimpleLoader width="20" />}
             <Button disabled={fetchingFile} aria-haspopup="true" variant="contained" onClick={handleProfileMenuOpen}>
@@ -209,7 +192,7 @@ const Freemius = () => {
               open={isMenuOpen}
               onClose={handleMenuClose}
             >
-              {details[`freemius${plugin.productId}`]?.map((tag) => (
+              {details[`versions${plugin.productId}`]?.map((tag) => (
                 <MenuItem classes={{ root: fetchingFile ? "opacity-50 pointer-events-none" : "" }} key={tag.version} onClick={() => handlePluginDownlod(tag.id, `${tag.premium_slug}.${tag.version}.zip`)}>
                   {`${tag.premium_slug}.${tag.version}.zip`}
                 </MenuItem>
@@ -220,7 +203,7 @@ const Freemius = () => {
           <h3>Not Downloadable</h3>
         )}
       </Box>
-      <Box className="flex p-3 justify-center gap-3 items-center">
+      <Box className="flex p-3 justify-center mb-5 gap-3 items-center">
         <Typography variant="h6" className="text-3xl">
           License:
         </Typography>
@@ -238,7 +221,9 @@ const Freemius = () => {
           )}
         </Button>
       </Box>
-      <Box>{/* <WebsiteTable licenseKey={licenseKey} tableName={product?.tableName} /> */}</Box>
+      <Box>
+        <FreemiusWEbsiteTable productId={plugin?.productId} />
+      </Box>
     </div>
   );
 };

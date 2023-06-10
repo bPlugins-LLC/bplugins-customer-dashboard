@@ -14,6 +14,11 @@ const UserSchema = new Schema<IUser>(
       required: true,
       default: ["customer"],
     },
+    freemius: {
+      public_key: String,
+      secret_key: String,
+      id: Number,
+    },
     password: { type: String, required: true },
   },
   { timestamps: true }

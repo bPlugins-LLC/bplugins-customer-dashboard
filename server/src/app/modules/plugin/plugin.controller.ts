@@ -41,9 +41,6 @@ export const getPluginsByUserId = async (req: Request, res: Response) => {
     const plugins = await Plugin.find({ userId: req.params?.id });
 
     const pluginIds = plugins.map((plugin) => plugin._id);
-    // return res.json(pluginIds);
-
-    // const data = plugins.map(async () => {});
 
     const freemius = await Freemius.find({ pluginId: { $in: pluginIds } });
     const gumroad = await Gumroad.find({ pluginId: { $in: pluginIds } });

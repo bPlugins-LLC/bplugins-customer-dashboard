@@ -12,9 +12,9 @@ const initialState = {
   freemiusUser: null,
 };
 
-export const fetchFreemiusUser = createAsyncThunk("user/fetchFreemiusUser", async ({ pluginId, userId }) => {
+export const fetchFreemiusUser = createAsyncThunk("user/fetchFreemiusUser", async ({ pluginId, freemiusUserId, userId }) => {
   try {
-    const response = await axios.get(`/api/v1/freemius/plugins/${pluginId}/users/${userId}?fields=email,public_key,secret_key,first,last`);
+    const response = await axios.get(`/api/v1/freemius/plugins/${pluginId}/users/${freemiusUserId}?user_id=${userId}&fields=email,public_key,secret_key,first,last`);
     console.log({ pluginId, userId }, response.data);
     return response.data.data;
   } catch (error) {

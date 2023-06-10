@@ -4,7 +4,9 @@ import axios from "axios";
 class Freemius {
   private endpoint = "https://api.freemius.com";
   private _format = "json";
-  constructor(private _scope: String, private id: string | number | undefined, private publicKey: string | undefined, private secretKey: string | undefined) {}
+  public lastUsedEndpoint: string = "";
+  public lastUsedHeader: any = {};
+  constructor(private _scope: String, private id: number | string | undefined, private publicKey: string, private secretKey: string) {}
 
   generateSignature(secret: string, stringToSign: string) {
     const hmac = crypto.createHmac("sha256", secret);
@@ -75,22 +77,22 @@ class Freemius {
     let base;
     switch (this._scope as string) {
       case "app":
-        base = "/apps/" + 6519;
+        base = "/apps/" + this.id;
         break;
       case "developer":
-        base = "/developers/" + 6519;
+        base = "/developers/" + this.id;
         break;
       case "store":
-        base = "/stores/" + 6519;
+        base = "/stores/" + this.id;
         break;
       case "user":
-        base = "/users/" + 6519;
+        base = "/users/" + this.id;
         break;
       case "plugin":
-        base = "/plugins/" + 6519;
+        base = "/plugins/" + this.id;
         break;
       case "install":
-        base = "/installs/" + 6519;
+        base = "/installs/" + this.id;
         break;
       default:
         throw new Error("Scope not implemented.");
@@ -111,23 +113,56 @@ class Freemius {
     }
   }
 
-  async makeRequest(path: string) {
+  async makeRequest(path: string, headers: any = {}) {
     const canonizePath = this.canonizePath(path);
-    // return canonizePath;
-    console.log(canonizePath);
+    this.lastUsedEndpoint = this.endpoint + canonizePath;
+    this.lastUsedHeader = this.generateAuthorizationHeader(canonizePath.split("?")?.[0]);
     try {
-      const { data } = await axios.get(this.endpoint + canonizePath, {
-        headers: this.generateAuthorizationHeader(canonizePath.split("?")?.[0]),
+      const response = await axios.get(this.endpoint + canonizePath, {
+        headers: {
+          ...this.lastUsedHeader,
+          ...headers,
+        },
       });
-      return data;
+      return response.data;
     } catch (error) {
       return error;
     }
   }
 
-  async getTags(id: string | number) {
+  async makeRawRequest(path: string, headers: any = {}) {
+    const canonizePath = this.canonizePath(path);
+    try {
+      const response = await axios.get(this.endpoint + canonizePath, {
+        headers: {
+          ...this.generateAuthorizationHeader(canonizePath.split("?")?.[0]),
+          ...headers,
+        },
+      });
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
+
+  async getTags(id: string | number): Promise<any> {
     const path = `/plugins/${id}/tags.json`;
-    return this.makeRequest(path);
+    return await this.makeRequest(path);
+  }
+
+  async getDownloadLink(data: { pluginId: string | number; tagId: string | number }, headers: any = {}): Promise<any> {
+    const { pluginId, tagId } = data;
+    const path = `/plugins/${pluginId}/tags/${tagId}.zip?is_premium=true`;
+    // return this.generateAuthorizationHeader(path.split("?")?.[0]);
+    return await this.makeRawRequest(path, headers);
+  }
+
+  async getAccessToken() {
+    return await this.makeRequest("token.json");
+  }
+
+  async getInstalls(pluginId: string | number) {
+    return await this.makeRequest(`/plugins/${pluginId}/installs.json?search&reason_id&fields=id,url,version,title,is_active,user_id,plugin_id&count=30`);
   }
 }
 
