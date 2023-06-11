@@ -1,6 +1,8 @@
 import { Box } from "@mui/material";
-import React from "react";
+import React, { useEffect } from "react";
 import Sidebar from "../../components/Sidebar/Sidebar";
+import { fetchFreemiusUser } from "../../rtk/features/user/userSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 const Home = () => {
   return (

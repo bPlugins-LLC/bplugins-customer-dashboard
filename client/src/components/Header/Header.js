@@ -127,6 +127,7 @@ export default function PrimarySearchAppBar() {
           {/* {Search was there} */}
           <Box sx={{ flexGrow: 1 }}></Box>
           <Box sx={{ display: { xs: "none", md: "flex" } }}>
+            <h3>{user.user.email}</h3>
             {user.user?.roles?.includes("admin") &&
               (user.activeRole === "customer" ? (
                 <Button onClick={() => dispatch(setUserRole("admin"))} sx={{ color: "#fff" }}>

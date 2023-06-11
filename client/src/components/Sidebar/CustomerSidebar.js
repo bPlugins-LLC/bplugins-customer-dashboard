@@ -6,10 +6,13 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchPlugins } from "../../rtk/features/plugin/pluginSlice";
 import MenuItem from "./MenuItem";
 import axios from "../../axios";
+import SimpleLoader from "../Loader/SimpleLoader";
 
 const CustomerSidebar = () => {
-  const { plugins } = useSelector((state) => state.plugin);
+  const { plugins, syncing, details } = useSelector((state) => state.plugin);
   const { user, loading } = useSelector((state) => state.user);
+
+  console.log(details);
 
   const dispatch = useDispatch();
 
@@ -20,17 +23,20 @@ const CustomerSidebar = () => {
   }, [user, loading, dispatch]);
 
   const handleSync = async () => {
-    const response = await axios.get(`/api/v1/freemius/plugins/sync/${user?._id}`);
+    await axios.get(`/api/v1/freemius/plugins/sync/${user?._id}`);
     dispatch(fetchPlugins(user?._id));
   };
 
   return (
     <Box className="bg-slate-300" sx={{ width: "240px", height: "calc(100vh - 64px)" }}>
-      <Box className="p-2 flex justify-center">
-        <Button onClick={handleSync} variant="contained">
-          Sync Data
-        </Button>
-      </Box>
+      {user?.freemius && (
+        <Box className="p-2 flex justify-center">
+          {syncing && <SimpleLoader width="20px" />}
+          <Button disabled={syncing} onClick={handleSync} variant="contained">
+            Sync Data
+          </Button>
+        </Box>
+      )}
       <List>
         {plugins?.freemius?.map((plugin) => {
           return <MenuItem key={plugin._id} to={`/plugin/freemius/${plugin._id}`} text={plugin.name} icon={<AppsIcon />} />;

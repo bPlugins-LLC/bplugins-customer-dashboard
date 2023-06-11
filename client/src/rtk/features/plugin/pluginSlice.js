@@ -7,11 +7,11 @@ const initialState = {
   error: null,
   details: {},
   subLoading: false,
+  syncing: false,
 };
 
 export const fetchPlugins = createAsyncThunk("plugin/fetchPlugins", async (userId) => {
   const response = await axios.get(`/api/v1/plugins/user/${userId}`);
-  console.log(`/api/v1/plugins/user/${userId}`, response.data);
   return response.data.data;
 });
 
@@ -108,6 +108,7 @@ const pluginSlice = createSlice({
     builder.addCase(fetchFreemiusPluginInstalls.fulfilled, (state, action) => {
       state.details[`installs${action.payload.productId}`] = action.payload.installs;
       state.subLoading = false;
+      console.log(action.payload);
     });
     builder.addCase(fetchFreemiusPluginInstalls.rejected, (state, action) => {
       state.error = action.payload;

@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
@@ -7,10 +7,11 @@ import User from "../user/user.model";
 import Plugin from "../plugin/plugin.model";
 import Gumroad from "../gumroad/gumroad.model";
 import Freemius from "../freemius/freemius.model";
+import FreemiusApi from "../../../lib/Freemius";
 
 import * as authServices from "./auth.service";
 
-export const processPluginPurchase = async (req: Request, res: Response) => {
+export const processPluginPurchase = async (req: Request, res: Response, next: NextFunction) => {
   let platform = null;
   let currentUser;
   try {
@@ -42,27 +43,39 @@ export const processPluginPurchase = async (req: Request, res: Response) => {
     }
 
     // create plugin
-    plugin.userId = currentUser._id;
-    const newPlugin = new Plugin(plugin);
-    await newPlugin.save();
+    let existPlugin = await Plugin.findOne({ licenseKey: plugin.licenseKey });
 
-    if (gumroad) {
-      gumroad.pluginId = newPlugin._id;
-      platform = new Gumroad(gumroad);
-      await platform.save();
-    } else if (freemius) {
-      freemius.pluginId = newPlugin._id;
-      platform = new Freemius(freemius);
-      await platform.save();
+    if (!existPlugin) {
+      plugin.userId = currentUser._id;
+
+      const newPlugin = new Plugin(plugin);
+      existPlugin = await newPlugin.save();
+
+      if (gumroad) {
+        gumroad.pluginId = newPlugin._id;
+        platform = new Gumroad(gumroad);
+        await platform.save();
+      } else if (freemius) {
+        const api = new FreemiusApi("developer", process.env.DEVELOPER_ID, process.env.PUBLIC_KEY, process.env.SECRET_KEY);
+        const freemiusUser = await api.makeRequest(`/plugins/${plugin.productId}/users/${freemius.userId}.json?fields=email,public_key,secret_key,first,last`);
+
+        if (!freemiusUser) {
+          return next("Internal Server Error");
+        }
+
+        currentUser.freemius = freemiusUser;
+        await currentUser.save();
+
+        freemius.pluginId = newPlugin._id;
+        platform = new Freemius(freemius);
+        await platform.save();
+      }
     }
 
     res.json({
       status: "success",
       data: {
         user: currentUser,
-        plugin: newPlugin,
-        platform,
-        gumroad,
       },
     });
   } catch (error) {

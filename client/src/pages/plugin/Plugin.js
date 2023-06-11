@@ -16,7 +16,7 @@ import Freemius from "./Freemius";
 import { fetchPluginList } from "../../rtk/features/pluginLIst/pluginListSlice";
 
 const Plugin = () => {
-  const { plugins, loading } = useSelector((state) => state.plugin);
+  const { plugins, loading, syncing } = useSelector((state) => state.plugin);
   const { platform, id } = useParams();
   const dispatch = useDispatch();
 
@@ -31,11 +31,19 @@ const Plugin = () => {
           <Box style={{ with: "240px" }}>
             <Sidebar />
           </Box>
-          <Loader />
+          <Box className="flex w-full mt-10 justify-center">
+            <Loader />
+          </Box>
         </Box>
       </>
     );
   }
+
+  // console.log("loading", loading);
+  console.log(plugins);
+  const plugin = plugins[platform].find((item) => item._id === id);
+
+  console.log(platform);
 
   return (
     <Box className="flex flex-row">
@@ -44,7 +52,7 @@ const Plugin = () => {
       </Box>
       <Box className="flex-auto p-3 pt-5">
         <Box className="text-center">
-          <h2 className="text-3xl">3D Viewer</h2>
+          <h2 className="text-3xl">{plugin?.name}</h2>
         </Box>
         <Box className="p-5 flex flex-row justify-center items-center gap-5 mt-4 text-center">{platform === "gumroad" ? <Gumroad /> : <Freemius />}</Box>
       </Box>

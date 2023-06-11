@@ -1,6 +1,6 @@
 import express from "express";
 
-import { getCollectionById, getFreemiusUser, getInstalls, getPluginDownloadLink, getPluginTags, getPlugins, syncPlugins, tempControllerDirectPath, useUserKey } from "./freemius.controller";
+import { deactivateLicense, getCollectionById, getFreemiusUser, getInstalls, getPluginDownloadLink, getPluginTags, getPlugins, syncPlugins, tempControllerDirectPath, useUserKey } from "./freemius.controller";
 
 const router = express.Router();
 
@@ -13,9 +13,10 @@ router.get("/plugins/:pluginId/tags/:tagId", getPluginDownloadLink);
 
 router.get("/path/:path", tempControllerDirectPath);
 router.get("/plugins/:plugin_id/users/:freemiusUserId", getFreemiusUser);
-router.get("/userkey/use", useUserKey);
+// router.get("/userkey/use", useUserKey);
 router.get("/plugins/:pluginId/installs", getInstalls);
 router.get("/plugins/:userId", getPlugins);
 router.get("/plugins/sync/:userId", syncPlugins);
+router.delete("/plugins/:plugin_id/installs/:install_id", deactivateLicense);
 
 export default router;

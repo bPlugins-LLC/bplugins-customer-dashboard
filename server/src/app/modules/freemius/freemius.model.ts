@@ -4,10 +4,6 @@ import IFreemius from "./freemius.interface";
 
 const FreemiusSchema = new Schema<IFreemius>(
   {
-    // id: {
-    //   type: Number,
-    //   required: true,
-    // },
     pluginId: {
       type: String,
       required: true,
@@ -39,7 +35,7 @@ const FreemiusSchema = new Schema<IFreemius>(
     },
     expiration: {
       type: String,
-      required: true,
+      default: null,
     },
   },
   { timestamps: true }

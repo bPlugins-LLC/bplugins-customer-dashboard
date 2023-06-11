@@ -162,7 +162,21 @@ class Freemius {
   }
 
   async getInstalls(pluginId: string | number) {
-    return await this.makeRequest(`/plugins/${pluginId}/installs.json?search&reason_id&fields=id,url,version,title,is_active,user_id,plugin_id&count=30`);
+    return await this.makeRequest(`/plugins/${pluginId}/installs.json?search&reason_id&fields=id,url,version,title,is_active,user_id,plugin_id,license_id&count=30`);
+  }
+
+  async deleteInstall(pluginId: string | number, install_id: number | string) {
+    const path = `/plugins/${pluginId}/installs/${install_id}.json`;
+    const canonizePath = this.canonizePath(path);
+    this.lastUsedHeader = this.generateAuthorizationHeader(canonizePath.split("?")?.[0]);
+    try {
+      const response = await axios.delete(this.endpoint + canonizePath, {
+        headers: this.lastUsedHeader,
+      });
+      return response.data;
+    } catch (error: any) {
+      return error.message;
+    }
   }
 }
 

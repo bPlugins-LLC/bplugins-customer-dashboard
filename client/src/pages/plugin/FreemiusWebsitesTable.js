@@ -41,14 +41,21 @@ const DangerButton = styled(Button)(({ theme }) => ({
   },
 }));
 
-export default function FreemiusWEbsiteTable({ productId }) {
+export default function FreemiusWEbsiteTable({ licenseId, productId, expired = false }) {
   const { details, subLoading } = useSelector((state) => state.plugin);
   const [websiteInDanger, setWebsiteInDanger] = React.useState(null);
+  const { user } = useSelector((state) => state.user);
   //   const { platform, id } = useParams();
   const dispatch = useDispatch();
 
-  const handleDeactivateLicense = (website) => {
-    setWebsiteInDanger(website);
+  const handleDeactivateLicense = async ({ id, license_id }) => {
+    try {
+      const response = await axios.delete(`/api/v1/freemius/plugins/${productId}/installs/${id}?user_id=${user?._id}`);
+      console.log(`/api/v1/freemius/plugins/${productId}/installs/${id}?user_id=${user?._id}`);
+      console.log("license deactivate", response.data);
+    } catch (error) {
+      console.log(error.message);
+    }
   };
 
   const handleActivateLicense = () => {};
@@ -64,7 +71,7 @@ export default function FreemiusWEbsiteTable({ productId }) {
     );
   }
 
-  const websites = details?.[`installs${productId}`];
+  const websites = details?.[`installs${productId}`]?.filter((item) => item.license_id === licenseId);
 
   if (!Array.isArray(websites) || !websites.length) {
     return (
@@ -100,11 +107,11 @@ export default function FreemiusWEbsiteTable({ productId }) {
                 <StyledTableCell align="right">
                   {/* {subLoading && details[`${licenseKey}`]?.indexOf(websiteInDanger) === index && <SimpleLoader width={20} />} */}
                   {website.is_active ? (
-                    <DangerButton disabled={subLoading} variant="contained" onClick={() => handleDeactivateLicense(website)}>
+                    <DangerButton disabled={expired || subLoading} variant="contained" onClick={() => handleDeactivateLicense(website)}>
                       Deactivate License
                     </DangerButton>
                   ) : (
-                    <Button disabled={subLoading} variant="contained" onClick={() => handleActivateLicense(website)}>
+                    <Button disabled={expired || subLoading} variant="contained" onClick={() => handleActivateLicense(website)}>
                       Activate License
                     </Button>
                   )}

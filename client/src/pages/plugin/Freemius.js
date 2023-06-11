@@ -16,7 +16,7 @@ import FreemiusWEbsiteTable from "./FreemiusWebsitesTable";
 
 const Freemius = () => {
   const { plugins, details, subLoading } = useSelector((state) => state.plugin);
-  const { freemiusUser } = useSelector((state) => state.user);
+
   const { list } = useSelector((state) => state.pluginList);
   const { user } = useSelector((state) => state.user);
   const [loading, setLoading] = useState(false);
@@ -38,14 +38,17 @@ const Freemius = () => {
     if (!Object.keys(details).includes(`versions${plugin?.productId}`) && plugin?.productId) {
       dispatch(fetchFreemiusPluginVersions(plugin?.productId));
     }
-    if (!Object.keys(details).includes(`installs${plugin?.productId}`) && plugin?.productId) {
+    if (!Object.keys(details).includes(`installs${productId}`) && plugin?.productId) {
       dispatch(fetchFreemiusPluginInstalls({ productId: plugin?.productId, userId: user?._id }));
     }
   }, [dispatch, plugin, user?._id, details]);
 
+  console.log(plugin);
+
   useEffect(() => {
     setFieldType("password");
     const plugin = plugins?.[platform]?.find((item) => item._id === id);
+    console.log({ plugin });
     if (!plugin) {
       setLoading(true);
       axios
@@ -129,17 +132,6 @@ const Freemius = () => {
     }
   }, [product, licenseKey, dispatch, details]);
 
-  useEffect(() => {
-    console.log(plugin?.freemius?.userId, freemiusUser);
-    if (!freemiusUser && plugin?.freemius?.userId) {
-      dispatch(fetchFreemiusUser({ pluginId: plugin.productId, freemiusUserId: plugin?.freemius?.userId, userId: user?._id }));
-    }
-  }, [freemiusUser, plugin, dispatch, user?._id]);
-
-  useEffect(() => {
-    console.log(freemiusUser);
-  }, [freemiusUser]);
-
   if (loading || subLoading) {
     return (
       <Box>
@@ -147,8 +139,6 @@ const Freemius = () => {
       </Box>
     );
   }
-
-  console.log(new Date(plugin.freemius?.expiration).getTime());
 
   if (!licenseKey || !product) {
     <h3 className="text-3xl">Something went wrong!</h3>;
@@ -231,7 +221,7 @@ const Freemius = () => {
         </Button>
       </Box>
       <Box>
-        <FreemiusWEbsiteTable productId={plugin?.productId} />
+        <FreemiusWEbsiteTable licenseId={plugin?.freemius?.licenseId} productId={productId} expired={expired} />
       </Box>
     </div>
   );
