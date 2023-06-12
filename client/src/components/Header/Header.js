@@ -14,7 +14,7 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import MoreIcon from "@mui/icons-material/MoreVert";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { logout, setUserRole, userLogout } from "../../rtk/features/user/userSlice";
+import { logout, setDrawerOpen, setUserRole, userLogout } from "../../rtk/features/user/userSlice";
 
 export default function PrimarySearchAppBar() {
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -46,6 +46,13 @@ export default function PrimarySearchAppBar() {
     dispatch(userLogout());
     handleMenuClose();
     dispatch(logout());
+  };
+
+  const toggleDrawer = (open) => (event) => {
+    if (event.type === "keydown" && (event.key === "Tab" || event.key === "Shift")) {
+      return;
+    }
+    dispatch(setDrawerOpen(open));
   };
 
   const menuId = "primary-search-account-menu";
@@ -116,7 +123,7 @@ export default function PrimarySearchAppBar() {
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
         <Toolbar>
-          <IconButton size="large" edge="start" color="inherit" aria-label="open drawer" sx={{ mr: 2 }}>
+          <IconButton onClick={toggleDrawer(true)} size="large" edge="start" color="inherit" aria-label="open drawer" sx={{ mr: 2 }}>
             <MenuIcon />
           </IconButton>
 

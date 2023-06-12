@@ -28,7 +28,7 @@ const CustomerSidebar = () => {
   };
 
   return (
-    <Box className="bg-slate-300" sx={{ width: "240px", height: "calc(100vh - 64px)" }}>
+    <Box className="bg-slate-300" sx={{ width: "255px" }}>
       {user?.freemius && (
         <Box className="p-2 flex justify-center">
           {syncing && <SimpleLoader width="20px" />}

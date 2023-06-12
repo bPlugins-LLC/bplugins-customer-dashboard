@@ -12,6 +12,7 @@ const initialState = {
   error: null,
   activeRole: "customer",
   freemiusUser: null,
+  drawerOpen: false,
 };
 
 export const fetchFreemiusUser = createAsyncThunk("user/fetchFreemiusUser", async ({ pluginId, freemiusUserId, userId }) => {
@@ -75,6 +76,9 @@ const userSlice = createSlice({
       pluginLogout();
       pluginListLogout();
     },
+    setDrawerOpen: (state, action) => {
+      state.drawerOpen = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(verifyUserToken.pending, (state) => {
@@ -126,4 +130,4 @@ const userSlice = createSlice({
 
 export default userSlice.reducer;
 
-export const { setUser, setUserRole, userLogout, setUserError, logout } = userSlice.actions;
+export const { setUser, setUserRole, userLogout, setUserError, logout, setDrawerOpen } = userSlice.actions;

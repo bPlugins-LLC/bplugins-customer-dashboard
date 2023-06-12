@@ -16,6 +16,7 @@ import Freemius from "./Freemius";
 import { fetchPluginList } from "../../rtk/features/pluginLIst/pluginListSlice";
 
 const Plugin = () => {
+  const [plugin, setPlugin] = useState({});
   const { plugins, loading, syncing } = useSelector((state) => state.plugin);
   const { platform, id } = useParams();
   const dispatch = useDispatch();
@@ -23,6 +24,29 @@ const Plugin = () => {
   useEffect(() => {
     dispatch(fetchPluginList());
   }, [dispatch]);
+
+  useEffect(() => {
+    // setFieldType("password");
+    const plugin = plugins?.[platform]?.find((item) => item._id === id);
+
+    console.log({ plugin });
+    if (!plugin) {
+      // setLoading(true);
+      axios
+        .get(`/api/v1/plugins/${id}`)
+        .then(({ data }) => {
+          console.log({ data });
+          setPlugin(data.data);
+          // setLoading(false);
+        })
+        .catch((err) => {
+          console.log(err.message);
+          // setLoading(false);
+        });
+    } else {
+      setPlugin(plugin);
+    }
+  }, [id, platform, plugins]);
 
   if (loading) {
     return (
@@ -41,9 +65,12 @@ const Plugin = () => {
 
   // console.log("loading", loading);
   console.log(plugins);
-  const plugin = plugins[platform].find((item) => item._id === id);
+  // const plugin = plugins[platform].find((item) => item._id === id);
+  console.log({ plugin });
 
-  console.log(platform);
+  if (!plugin) {
+    return <h3>Loading...</h3>;
+  }
 
   return (
     <Box className="flex flex-row">
@@ -54,7 +81,7 @@ const Plugin = () => {
         <Box className="text-center">
           <h2 className="text-3xl">{plugin?.name}</h2>
         </Box>
-        <Box className="p-5 flex flex-row justify-center items-center gap-5 mt-4 text-center">{platform === "gumroad" ? <Gumroad /> : <Freemius />}</Box>
+        <Box className="p-5 flex flex-row justify-center items-center gap-5 mt-4 text-center">{platform === "gumroad" ? <Gumroad /> : <Freemius plugin={plugin} />}</Box>
       </Box>
     </Box>
   );

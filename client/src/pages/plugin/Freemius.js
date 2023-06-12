@@ -14,13 +14,12 @@ import SimpleLoader from "../../components/Loader/SimpleLoader";
 import { fetchFreemiusUser } from "../../rtk/features/user/userSlice";
 import FreemiusWEbsiteTable from "./FreemiusWebsitesTable";
 
-const Freemius = () => {
+const Freemius = ({ plugin }) => {
   const { plugins, details, subLoading } = useSelector((state) => state.plugin);
 
   const { list } = useSelector((state) => state.pluginList);
   const { user } = useSelector((state) => state.user);
   const [loading, setLoading] = useState(false);
-  const [plugin, setPlugin] = useState({});
   const [copied, setCopied] = useState(false);
   const [fetchingFile, setFetchingFile] = useState(false);
 
@@ -29,43 +28,19 @@ const Freemius = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [fieldType, setFieldType] = useState("password");
   const { platform, id } = useParams();
-  const { productId, licenseKey } = plugin;
+  const { productId = "lsdkf", licenseKey } = plugin;
   const product = list?.find((item) => item.IDs.includes(productId));
   const { docsURL, demoURL } = product || {};
   const licenseField = useRef();
 
   useEffect(() => {
-    if (!Object.keys(details).includes(`versions${plugin?.productId}`) && plugin?.productId) {
+    if (!Object.keys(details).includes(`versions${productId}`) && productId) {
       dispatch(fetchFreemiusPluginVersions(plugin?.productId));
     }
-    if (!Object.keys(details).includes(`installs${productId}`) && plugin?.productId) {
-      dispatch(fetchFreemiusPluginInstalls({ productId: plugin?.productId, userId: user?._id }));
+    if (!Object.keys(details).includes(`installs${productId}`) && productId) {
+      dispatch(fetchFreemiusPluginInstalls({ productId: productId, userId: user?._id }));
     }
   }, [dispatch, plugin, user?._id, details]);
-
-  console.log(plugin);
-
-  useEffect(() => {
-    setFieldType("password");
-    const plugin = plugins?.[platform]?.find((item) => item._id === id);
-    console.log({ plugin });
-    if (!plugin) {
-      setLoading(true);
-      axios
-        .get(`/api/v1/plugins/${id}`)
-        .then(({ data }) => {
-          console.log(data);
-          setPlugin(data.data);
-          setLoading(false);
-        })
-        .catch((err) => {
-          console.log(err.message);
-          setLoading(false);
-        });
-    } else {
-      setPlugin(plugin);
-    }
-  }, [id, platform, plugins]);
 
   const menuId = "primary-search-account-menu";
   const isMenuOpen = Boolean(anchorEl);
@@ -89,7 +64,7 @@ const Freemius = () => {
   const handlePluginDownlod = async (tagId, filename) => {
     let success = false;
 
-    let endpoint = `http://localhost:5000/api/v1/freemius/plugins/${plugin.productId}/tags/${tagId}`;
+    let endpoint = `http://localhost:5000/api/v1/freemius/plugins/${productId}/tags/${tagId}`;
 
     for (let i = 0; i < 3; i++) {
       try {
@@ -117,17 +92,17 @@ const Freemius = () => {
 
   useEffect(() => {
     if (licenseKey && product?.tableName && !details[licenseKey]) {
-      setLoading(true);
+      // setLoading(true);
       axios
         .get(`http://localhost/freemius/wp-json/license/v1/gumroad?license_key=${licenseKey}&product=${product?.tableName}`)
         .then(({ data }) => {
           // setWebsites(data.website);
           console.log(data);
           dispatch(setDetails({ [licenseKey]: data.website ? data.website : [] }));
-          setLoading(false);
+          // setLoading(false);
         })
         .catch((err) => {
-          setLoading(false);
+          // setLoading(false);
         });
     }
   }, [product, licenseKey, dispatch, details]);
@@ -154,7 +129,7 @@ const Freemius = () => {
             <h3>License Key expired!</h3>
           </Box>
         )}
-        {!expired && Array.isArray(details[`versions${plugin.productId}`]) && details[`versions${plugin.productId}`]?.length ? (
+        {!expired && Array.isArray(details[`versions${productId}`]) && details[`versions${productId}`]?.length ? (
           <>
             {fetchingFile && <SimpleLoader width="20" />}
             <Button disabled={fetchingFile} aria-haspopup="true" variant="contained" onClick={handleProfileMenuOpen}>
@@ -191,7 +166,7 @@ const Freemius = () => {
               open={isMenuOpen}
               onClose={handleMenuClose}
             >
-              {details[`versions${plugin.productId}`]?.map((tag) => (
+              {details[`versions${productId}`]?.map((tag) => (
                 <MenuItem classes={{ root: fetchingFile ? "opacity-50 pointer-events-none" : "" }} key={tag.version} onClick={() => handlePluginDownlod(tag.id, `${tag.premium_slug}.${tag.version}.zip`)}>
                   {`${tag.premium_slug}.${tag.version}.zip`}
                 </MenuItem>
