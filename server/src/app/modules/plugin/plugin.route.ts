@@ -1,6 +1,6 @@
 import express from "express";
 
-import { createPlugin, getAllPlugins, getPluginById, getPluginsByUserId } from "./plugin.controller";
+import { createPlugin, getAllPlugins, getPluginById, getPluginsByUserId, syncFreemiusPlugins, syncGumroadPlugins } from "./plugin.controller";
 import verifyToken from "../../../utils/verifyToken";
 
 const router = express.Router();
@@ -12,5 +12,6 @@ router.get("/:id", verifyToken, getPluginById);
 router.get("/user/:id", verifyToken, getPluginsByUserId);
 
 router.post("/create", verifyToken, createPlugin);
+router.get("/sync/:userId", syncFreemiusPlugins, syncGumroadPlugins);
 
 export default router;

@@ -23,7 +23,7 @@ const CustomerSidebar = () => {
   }, [user, loading, dispatch]);
 
   const handleSync = async () => {
-    await axios.get(`/api/v1/freemius/plugins/sync/${user?._id}`);
+    await axios.get(`/api/v1/plugins/sync/${user?._id}`);
     dispatch(fetchPlugins(user?._id));
   };
 
